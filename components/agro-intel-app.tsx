@@ -5,7 +5,8 @@ import {
   Camera, Upload, Home, Sprout, Users, Settings,
   AlertCircle, CheckCircle, ChevronRight, Droplets,
   Sun, TrendingUp, MapPin, Info, X, ChevronLeft,
-  Moon, Sun as SunIcon, Loader2, Send, Leaf, Globe
+  Moon, Sun as SunIcon, Loader2, Send, Leaf, Globe,
+  MessageCircle, Wheat, Calendar, AlertTriangle, ArrowLeft
 } from 'lucide-react';
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
@@ -117,8 +118,8 @@ const Button = ({ children, variant = 'primary', className = '', onClick, disabl
   );
 };
 
-const Card = ({ children, className = '', highlight = false }: any) => (
-  <div className={`
+const Card = ({ children, className = '', highlight = false, onClick }: any) => (
+  <div onClick={onClick} className={`
     relative overflow-hidden
     bg-white dark:bg-[#1E1E1E] ${THEME.radius} p-5 ${THEME.shadow}
     ${highlight ? 'border border-[#22B550]/30 ring-4 ring-[#22B550]/5' : 'border border-gray-50 dark:border-[#333]'}
@@ -145,6 +146,232 @@ const Badge = ({ children, type = 'success', className = '' }: any) => {
 };
 
 // --- Features ---
+
+const ChatScreen = ({ onBack }: { onBack: () => void }) => {
+  const [messages, setMessages] = useState<{id: string, type: 'user' | 'assistant', content: string}[]>([
+    { id: '1', type: 'assistant', content: 'Hello! I am your AgroIntel assistant. Ask me about crop diseases, farming practices, or market prices in Kerala.' }
+  ]);
+  const [input, setInput] = useState("");
+  const [loading, setLoading] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  const handleSend = async () => {
+    if (!input.trim()) return;
+
+    const userMessage = { id: Date.now().toString(), type: 'user' as const, content: input };
+    setMessages(prev => [...prev, userMessage]);
+    setInput("");
+    setLoading(true);
+
+    try {
+      const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY || "";
+      const genAI = new GoogleGenerativeAI(apiKey);
+      const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-preview-09-2025" });
+
+      const chat = model.startChat({
+        history: [
+          {
+            role: "user",
+            parts: [{ text: "You are an expert agricultural assistant for farmers in Kerala, India. Provide helpful, concise advice on crops (rice, coconut, spices), weather, and market trends." }],
+          },
+          {
+            role: "model",
+            parts: [{ text: "Namaste! I am ready to help you with your farming needs in Kerala." }],
+          },
+        ],
+      });
+
+      const result = await chat.sendMessage(userMessage.content);
+      const response = await result.response;
+      const text = response.text();
+
+      setMessages(prev => [...prev, { id: (Date.now() + 1).toString(), type: 'assistant', content: text }]);
+    } catch (error) {
+      console.error(error);
+      setMessages(prev => [...prev, { id: (Date.now() + 1).toString(), type: 'assistant', content: "I'm having trouble connecting to the network. Please try again later." }]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="flex flex-col h-full bg-gray-50 dark:bg-[#121212] pb-24">
+      <header className="bg-white dark:bg-[#1E1E1E] px-4 py-3 border-b border-gray-100 dark:border-gray-800 flex items-center gap-3 sticky top-0 z-10">
+        <button onClick={onBack} className="p-2 -ml-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors">
+          <ChevronLeft className="w-5 h-5 text-[#2C3E50] dark:text-white" />
+        </button>
+        <div>
+          <h1 className="text-lg font-bold text-[#2C3E50] dark:text-white">Agro Expert</h1>
+          <p className="text-xs text-gray-500">AI Assistant • Online</p>
+        </div>
+      </header>
+
+      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        {messages.map((msg) => (
+          <div key={msg.id} className={`flex ${msg.type === 'user' ? 'justify-end' : 'justify-start'}`}>
+            <div className={`max-w-[80%] p-3 rounded-2xl ${
+              msg.type === 'user'
+                ? 'bg-[#22B550] text-white rounded-tr-sm'
+                : 'bg-white dark:bg-[#1E1E1E] text-[#2C3E50] dark:text-gray-200 shadow-sm rounded-tl-sm'
+            }`}>
+              <p className="text-sm leading-relaxed whitespace-pre-wrap">{msg.content}</p>
+            </div>
+          </div>
+        ))}
+        {loading && (
+           <div className="flex justify-start">
+             <div className="bg-white dark:bg-[#1E1E1E] p-3 rounded-2xl rounded-tl-sm shadow-sm flex gap-1">
+               <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></span>
+               <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce delay-100"></span>
+               <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce delay-200"></span>
+             </div>
+           </div>
+        )}
+        <div ref={messagesEndRef} />
+      </div>
+
+      <div className="bg-white dark:bg-[#1E1E1E] p-3 border-t border-gray-100 dark:border-gray-800 fixed bottom-0 w-full max-w-md z-20">
+        <div className="flex gap-2">
+          <input
+            type="text"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+            placeholder="Ask about your crops..."
+            className="flex-1 bg-gray-100 dark:bg-[#2D2D2D] border-0 rounded-full px-4 text-sm focus:ring-2 focus:ring-[#22B550] dark:text-white"
+          />
+          <button
+            onClick={handleSend}
+            disabled={!input.trim() || loading}
+            className="w-10 h-10 bg-[#22B550] rounded-full flex items-center justify-center text-white disabled:opacity-50"
+          >
+            <Send className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const CropRecommendation = ({ onBack }: { onBack: () => void }) => {
+  const [step, setStep] = useState(1);
+  const [formData, setFormData] = useState({
+    location: "",
+    soilType: "",
+    season: "",
+    waterSource: ""
+  });
+  const [loading, setLoading] = useState(false);
+  const [recommendation, setRecommendation] = useState<string | null>(null);
+
+  const handleRecommend = async () => {
+    setLoading(true);
+    try {
+      const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY || "";
+      const genAI = new GoogleGenerativeAI(apiKey);
+      const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-preview-09-2025" });
+
+      const prompt = `
+        Recommend 3 best crops for a farm in ${formData.location} (Kerala context).
+        Soil: ${formData.soilType}
+        Season: ${formData.season}
+        Water Source: ${formData.waterSource}
+
+        Format the response as a JSON list with 'crop_name', 'reason', 'yield_potential', 'risk_level'.
+      `;
+
+      const result = await model.generateContent(prompt);
+      const text = result.response.text();
+      // Simple parsing/cleaning of JSON block if needed, but for now just displaying text or parsing if clean
+      setRecommendation(text);
+    } catch (error) {
+      console.error(error);
+      setRecommendation("Error fetching recommendations.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const steps = [
+    { title: "Farm Location", field: "location", placeholder: "e.g., Palakkad" },
+    { title: "Soil Type", field: "soilType", placeholder: "e.g., Red Loam, Sandy" },
+    { title: "Current Season", field: "season", placeholder: "e.g., Monsoon (Kharif)" },
+    { title: "Water Source", field: "waterSource", placeholder: "e.g., Well, Rainfed" }
+  ];
+
+  if (recommendation) {
+     return (
+        <div className="h-full bg-gray-50 dark:bg-[#121212] overflow-y-auto pb-20 p-6">
+           <div className="flex items-center gap-3 mb-6">
+            <button onClick={() => setRecommendation(null)} className="p-2 -ml-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-800">
+              <ChevronLeft className="w-5 h-5 dark:text-white" />
+            </button>
+            <h1 className="text-xl font-bold dark:text-white">Recommended Crops</h1>
+           </div>
+
+           <div className="prose dark:prose-invert">
+              <pre className="whitespace-pre-wrap font-sans text-sm text-gray-700 dark:text-gray-300">
+                {recommendation.replace(/```json/g, '').replace(/```/g, '')}
+              </pre>
+           </div>
+
+           <Button onClick={() => setRecommendation(null)} className="w-full mt-8">Start Over</Button>
+        </div>
+     )
+  }
+
+  return (
+    <div className="h-full bg-white dark:bg-[#1A1A1A] flex flex-col p-6">
+      <div className="flex items-center gap-3 mb-8">
+        <button onClick={onBack} className="p-2 -ml-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800">
+          <ChevronLeft className="w-5 h-5 dark:text-white" />
+        </button>
+        <h1 className="text-xl font-bold dark:text-white">Plan Your Crop</h1>
+      </div>
+
+      <div className="flex-1">
+        {steps.map((s, idx) => (
+          <div key={idx} className={`transition-all duration-300 ${step === idx + 1 ? 'opacity-100 block' : 'opacity-0 hidden'}`}>
+            <label className="block text-sm font-bold text-gray-500 mb-2 uppercase tracking-wider">{s.title}</label>
+            <input
+              value={(formData as any)[s.field]}
+              onChange={e => setFormData({...formData, [s.field]: e.target.value})}
+              placeholder={s.placeholder}
+              className="w-full text-2xl font-bold border-b-2 border-gray-200 dark:border-gray-700 py-2 bg-transparent focus:outline-none focus:border-[#22B550] dark:text-white"
+            />
+          </div>
+        ))}
+      </div>
+
+      <div className="mt-auto">
+        <div className="flex gap-2 mb-6">
+           {steps.map((_, i) => (
+             <div key={i} className={`h-1 flex-1 rounded-full ${i < step ? 'bg-[#22B550]' : 'bg-gray-200 dark:bg-gray-800'}`}></div>
+           ))}
+        </div>
+
+        <Button
+          onClick={() => {
+            if (step < 4) setStep(step + 1);
+            else handleRecommend();
+          }}
+          disabled={loading}
+          className="w-full"
+        >
+           {loading ? <Loader2 className="animate-spin" /> : step < 4 ? 'Next' : 'Get Advice'}
+        </Button>
+      </div>
+    </div>
+  );
+};
 
 const DiseaseDetection = ({ onResult, goBack }: any) => {
   const [image, setImage] = useState<string | null>(null);
@@ -463,12 +690,15 @@ const HomeView = ({ onNavigate, lang }: any) => (
           <span className="font-bold text-[#2C3E50] dark:text-white z-10">Scan Crop</span>
         </button>
 
-        <button className="relative h-32 bg-orange-50 dark:bg-orange-900/10 rounded-[2rem] p-5 flex flex-col justify-between items-start hover:bg-orange-100 transition-colors group overflow-hidden">
+        <button
+          onClick={() => onNavigate('crop-recommend')}
+          className="relative h-32 bg-orange-50 dark:bg-orange-900/10 rounded-[2rem] p-5 flex flex-col justify-between items-start hover:bg-orange-100 transition-colors group overflow-hidden"
+        >
           <div className="absolute -bottom-4 -right-4 w-20 h-20 bg-orange-200 rounded-full blur-xl opacity-50 group-hover:opacity-100 transition-opacity"></div>
            <div className="w-10 h-10 bg-white dark:bg-orange-500 rounded-full flex items-center justify-center shadow-sm z-10">
-            <TrendingUp className="text-orange-500 dark:text-white w-5 h-5" />
+            <Wheat className="text-orange-500 dark:text-white w-5 h-5" />
           </div>
-          <span className="font-bold text-[#2C3E50] dark:text-white z-10">Market Rates</span>
+          <span className="font-bold text-[#2C3E50] dark:text-white z-10">Crop Plan</span>
         </button>
       </div>
     </div>
@@ -483,7 +713,7 @@ const HomeView = ({ onNavigate, lang }: any) => (
       <div className="flex gap-4 overflow-x-auto pb-4 -mx-6 px-6 scrollbar-hide">
         {MOCK_FARMS.map(farm => (
           <div key={farm.id} className="min-w-[240px]">
-            <Card className="!p-0 h-full">
+            <Card onClick={() => onNavigate('farm-detail')} className="!p-0 h-full cursor-pointer">
               <div className="h-28 relative">
                 <img src={farm.image} alt={farm.name} className="w-full h-full object-cover" />
                 <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-lg text-[10px] font-bold shadow-sm">
@@ -505,7 +735,7 @@ const HomeView = ({ onNavigate, lang }: any) => (
   </div>
 );
 
-const FarmsView = () => (
+const FarmsView = ({ onNavigate }: any) => (
   <div className="p-6 pb-28 space-y-6 animate-in slide-in-from-right">
     <div className="flex justify-between items-center">
       <h1 className="text-2xl font-bold dark:text-white">My Farms</h1>
@@ -514,7 +744,7 @@ const FarmsView = () => (
 
     <div className="grid gap-6">
       {MOCK_FARMS.map(farm => (
-        <Card key={farm.id} className="!p-0 group">
+        <Card key={farm.id} onClick={() => onNavigate('farm-detail')} className="!p-0 group cursor-pointer">
           <div className="flex h-32">
              <div className="w-1/3 relative">
                <img src={farm.image} className="w-full h-full object-cover" />
@@ -547,7 +777,7 @@ const FarmsView = () => (
   </div>
 );
 
-const CommunityView = () => (
+const CommunityView = ({ onNavigate }: any) => (
   <div className="p-6 pb-28 h-full flex flex-col animate-in slide-in-from-right">
     <h1 className="text-2xl font-bold mb-6 dark:text-white">Expert Q&A</h1>
 
@@ -598,12 +828,74 @@ const CommunityView = () => (
 
     {/* Floating Action Button */}
     <div className="fixed bottom-24 right-6">
-      <button className="w-14 h-14 bg-[#22B550] rounded-full shadow-xl shadow-green-500/40 flex items-center justify-center text-white hover:scale-110 transition-transform">
-        <Send className="w-6 h-6 ml-1" />
+      <button
+        onClick={() => onNavigate('chat')}
+        className="w-14 h-14 bg-[#22B550] rounded-full shadow-xl shadow-green-500/40 flex items-center justify-center text-white hover:scale-110 transition-transform"
+      >
+        <MessageCircle className="w-6 h-6" />
       </button>
     </div>
   </div>
 );
+
+const FarmDetailView = ({ onBack }: any) => {
+  const recentEvents = [
+    { icon: AlertTriangle, title: "Leaf spot detected", time: "2 days ago", color: "text-orange-500" },
+    { icon: CheckCircle, title: "Fungicide applied", time: "1 day ago", color: "text-green-500" },
+    { icon: Droplets, title: "Irrigation completed", time: "Today", color: "text-blue-500" },
+  ];
+
+  return (
+    <div className="h-full bg-gray-50 dark:bg-[#121212] overflow-y-auto pb-24">
+      {/* Hero Section */}
+      <div className="relative h-48 bg-gradient-to-br from-[#A5D6A7] to-[#66BB6A] overflow-hidden">
+        <button onClick={onBack} className="absolute top-4 left-4 p-2 bg-white/20 backdrop-blur-sm rounded-full text-white">
+          <ChevronLeft className="w-5 h-5" />
+        </button>
+        <div className="absolute inset-0 flex flex-col justify-end p-6">
+          <h1 className="text-2xl font-bold text-white mb-1">Kuttanad Rice Field</h1>
+          <div className="flex items-center gap-1 text-white/90">
+            <MapPin className="w-4 h-4" />
+            <span className="text-sm">Alappuzha, Kerala</span>
+          </div>
+        </div>
+      </div>
+
+      <main className="px-6 py-6 space-y-6">
+        {/* Health Score */}
+        <Card className="flex items-center gap-4">
+          <div className="relative w-16 h-16 flex items-center justify-center">
+             <div className="w-16 h-16 rounded-full border-4 border-gray-100 absolute"></div>
+             <div className="w-16 h-16 rounded-full border-4 border-[#22B550] absolute border-l-transparent rotate-45"></div>
+             <span className="text-lg font-bold text-[#2C3E50] dark:text-white">88%</span>
+          </div>
+          <div>
+            <p className="text-sm text-gray-500">Farm health score</p>
+            <p className="font-bold text-[#2C3E50] dark:text-white">Good condition</p>
+          </div>
+        </Card>
+
+        {/* Recent Events */}
+        <section>
+          <h2 className="text-lg font-bold text-[#2C3E50] dark:text-white mb-3">Recent Events</h2>
+          <Card className="!p-0 overflow-hidden">
+            {recentEvents.map((event, index) => (
+              <div key={index} className="p-4 flex items-center gap-3 border-b border-gray-50 dark:border-gray-800 last:border-0">
+                <div className={`${event.color}`}>
+                  <event.icon className="w-5 h-5" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-[#2C3E50] dark:text-white">{event.title}</p>
+                </div>
+                <span className="text-xs text-gray-400">{event.time}</span>
+              </div>
+            ))}
+          </Card>
+        </section>
+      </main>
+    </div>
+  );
+};
 
 // --- Layout ---
 
@@ -689,8 +981,11 @@ export default function AgroIntelApp() {
   const renderContent = () => {
     switch(view) {
       case 'home': return <HomeView onNavigate={setView} lang={lang} />;
-      case 'farms': return <FarmsView />;
-      case 'community': return <CommunityView />;
+      case 'farms': return <FarmsView onNavigate={setView} />;
+      case 'farm-detail': return <FarmDetailView onBack={() => setView('farms')} />;
+      case 'community': return <CommunityView onNavigate={setView} />;
+      case 'chat': return <ChatScreen onBack={() => setView('community')} />;
+      case 'crop-recommend': return <CropRecommendation onBack={() => setView('home')} />;
       case 'detect':
         if (detectionStage === 'result') {
           return <DiseaseResult result={analysisResult} image={analysisImage} onBack={resetDetection} />;
