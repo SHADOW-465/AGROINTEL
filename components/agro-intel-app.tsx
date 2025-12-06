@@ -7,35 +7,7 @@ import {
   Sun, TrendingUp, MapPin, Info, X, ChevronLeft,
   Moon, Sun as SunIcon, Loader2, Send, Leaf, Globe
 } from 'lucide-react';
-// import { GoogleGenerativeAI } from "@google/generative-ai";
-
-const GoogleGenerativeAI = class {
-  constructor(apiKey: string) {}
-  getGenerativeModel(config: any) {
-    return {
-      generateContent: async (content: any) => {
-        // Simulate delay
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        return {
-          response: {
-            text: async () => JSON.stringify({
-               "disease_found": true,
-               "disease_name": "Leaf Spot",
-               "confidence": 85,
-               "severity": "Moderate",
-               "symptoms": "Brown spots on leaves with yellow halos.",
-               "treatment": {
-                  "step_1": { "day": 1, "action": "Remove infected leaves", "cost_estimate": "₹0" },
-                  "step_2": { "day": 3, "action": "Apply fungicide", "cost_estimate": "₹250" }
-               },
-               "prevention": "Ensure good air circulation and avoid overhead watering."
-            })
-          }
-        }
-      }
-    }
-  }
-}
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
 /**
  * AgroIntel - Premium Farmer-Friendly App
@@ -186,7 +158,7 @@ const DiseaseDetection = ({ onResult, goBack }: any) => {
     setError(null);
 
     try {
-      const apiKey = "mock-key";
+      const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY || "";
       const genAI = new GoogleGenerativeAI(apiKey);
       const model = genAI.getGenerativeModel({
         model: "gemini-2.5-flash-preview-09-2025",
