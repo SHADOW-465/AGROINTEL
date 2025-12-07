@@ -54,7 +54,7 @@ export const ChatView: React.FC = () => {
       }
 
       const genAI = new GoogleGenerativeAI(apiKey);
-      const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash-preview-09-2025' });
+      const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
 
       const result = await model.generateContent({
           contents: [{ role: 'user', parts: [{ text: `You are an expert agriculture advisor for farmers in Kerala, India. Answer the following question helpfully and concisely: ${input}` }] }]
