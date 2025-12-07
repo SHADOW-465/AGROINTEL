@@ -9,6 +9,8 @@ interface BottomNavProps {
 export const BottomNav: React.FC<BottomNavProps> = ({ currentView, setView }) => {
   const navItems = [
     { id: 'home', icon: Home, label: 'Home' },
+    { id: 'detect', icon: Camera, label: 'Scan', highlight: true },
+    { id: 'chat', icon: MessageCircle, label: 'Advisor' },
     { id: 'farms', icon: Leaf, label: 'Farms' },
     { id: 'detect', icon: Camera, label: 'Scan', highlight: true },
     { id: 'chat', icon: MessageCircle, label: 'Chat' },

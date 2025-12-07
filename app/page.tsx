@@ -5,6 +5,8 @@ import { Sprout, Globe, Sun as SunIcon, Moon } from 'lucide-react';
 import { HomeView } from '@/components/views/HomeView';
 import { FarmsView } from '@/components/views/FarmsView';
 import { CommunityView } from '@/components/views/CommunityView';
+import { ChatView } from '@/components/views/ChatView';
+import { CropDoctorView } from '@/components/views/CropDoctorView';
 import { DiseaseDetection } from '@/components/features/DiseaseDetection';
 import { DiseaseResult } from '@/components/features/DiseaseResult';
 import { ChatView } from '@/components/views/ChatView';
@@ -46,7 +48,7 @@ export default function AgroIntelApp() {
       case 'farms': return <FarmsView />;
       case 'community': return <CommunityView />;
       case 'chat': return <ChatView />;
-      case 'recommend': return <CropRecommendationView onBack={() => setView('home')} />;
+      case 'crop_doctor': return <CropDoctorView />;
       case 'detect':
         if (detectionStage === 'result') {
           return <DiseaseResult result={analysisResult} image={analysisImage} onBack={resetDetection} />;

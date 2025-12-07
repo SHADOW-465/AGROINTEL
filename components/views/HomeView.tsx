@@ -72,7 +72,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate, lang }) => (
         </button>
 
         <button
-          onClick={() => onNavigate('recommend')}
+          onClick={() => onNavigate('crop_doctor')}
           className="relative h-32 bg-orange-50 dark:bg-orange-900/10 rounded-[2rem] p-5 flex flex-col justify-between items-start hover:bg-orange-100 transition-colors group overflow-hidden cursor-pointer"
         >
           <div className="absolute -bottom-4 -right-4 w-20 h-20 bg-orange-200 rounded-full blur-xl opacity-50 group-hover:opacity-100 transition-opacity"></div>
