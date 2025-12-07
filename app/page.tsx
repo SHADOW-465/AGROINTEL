@@ -7,6 +7,8 @@ import { FarmsView } from '@/components/views/FarmsView';
 import { CommunityView } from '@/components/views/CommunityView';
 import { DiseaseDetection } from '@/components/features/DiseaseDetection';
 import { DiseaseResult } from '@/components/features/DiseaseResult';
+import { ChatView } from '@/components/views/ChatView';
+import { CropRecommendationView } from '@/components/views/CropRecommendationView';
 import { BottomNav } from '@/components/layout/BottomNav';
 
 export default function AgroIntelApp() {
@@ -43,6 +45,8 @@ export default function AgroIntelApp() {
       case 'home': return <HomeView onNavigate={setView} lang={lang} />;
       case 'farms': return <FarmsView />;
       case 'community': return <CommunityView />;
+      case 'chat': return <ChatView />;
+      case 'recommend': return <CropRecommendationView onBack={() => setView('home')} />;
       case 'detect':
         if (detectionStage === 'result') {
           return <DiseaseResult result={analysisResult} image={analysisImage} onBack={resetDetection} />;

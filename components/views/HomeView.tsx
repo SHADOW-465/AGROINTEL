@@ -1,5 +1,5 @@
 import React from 'react';
-import { MapPin, Droplets, Camera, TrendingUp } from 'lucide-react';
+import { MapPin, Droplets, Camera, TrendingUp, Sprout } from 'lucide-react';
 import { MOCK_FARMS } from '@/lib/data';
 import { Card } from '@/components/ui/Card';
 
@@ -71,12 +71,15 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate, lang }) => (
           <span className="font-bold text-[#2C3E50] dark:text-white z-10">Scan Crop</span>
         </button>
 
-        <button className="relative h-32 bg-orange-50 dark:bg-orange-900/10 rounded-[2rem] p-5 flex flex-col justify-between items-start hover:bg-orange-100 transition-colors group overflow-hidden cursor-pointer">
+        <button
+          onClick={() => onNavigate('recommend')}
+          className="relative h-32 bg-orange-50 dark:bg-orange-900/10 rounded-[2rem] p-5 flex flex-col justify-between items-start hover:bg-orange-100 transition-colors group overflow-hidden cursor-pointer"
+        >
           <div className="absolute -bottom-4 -right-4 w-20 h-20 bg-orange-200 rounded-full blur-xl opacity-50 group-hover:opacity-100 transition-opacity"></div>
            <div className="w-10 h-10 bg-white dark:bg-orange-500 rounded-full flex items-center justify-center shadow-sm z-10">
-            <TrendingUp className="text-orange-500 dark:text-white w-5 h-5" />
+            <Sprout className="text-orange-500 dark:text-white w-5 h-5" />
           </div>
-          <span className="font-bold text-[#2C3E50] dark:text-white z-10">Market Rates</span>
+          <span className="font-bold text-[#2C3E50] dark:text-white z-10">Crop Doctor</span>
         </button>
       </div>
     </div>
