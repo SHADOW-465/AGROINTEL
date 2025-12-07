@@ -31,7 +31,7 @@ export const CropDoctorView: React.FC = () => {
       if (!apiKey) throw new Error('API Key not found');
 
       const genAI = new GoogleGenerativeAI(apiKey);
-      const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash-preview-09-2025' });
+      const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
 
       const prompt = `
         As an agricultural expert, recommend the best crop to grow in ${formData.city}, Kerala based on these soil conditions:

@@ -9,8 +9,6 @@ import { ChatView } from '@/components/views/ChatView';
 import { CropDoctorView } from '@/components/views/CropDoctorView';
 import { DiseaseDetection } from '@/components/features/DiseaseDetection';
 import { DiseaseResult } from '@/components/features/DiseaseResult';
-import { ChatView } from '@/components/views/ChatView';
-import { CropRecommendationView } from '@/components/views/CropRecommendationView';
 import { BottomNav } from '@/components/layout/BottomNav';
 
 export default function AgroIntelApp() {
