@@ -1,5 +1,5 @@
 import React from 'react';
-import { Home, Camera, Leaf, Users } from 'lucide-react';
+import { Home, Camera, Leaf, Users, MessageCircle } from 'lucide-react';
 
 interface BottomNavProps {
   currentView: string;
@@ -10,6 +10,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({ currentView, setView }) =>
   const navItems = [
     { id: 'home', icon: Home, label: 'Home' },
     { id: 'detect', icon: Camera, label: 'Scan', highlight: true },
+    { id: 'chat', icon: MessageCircle, label: 'Advisor' },
     { id: 'farms', icon: Leaf, label: 'Farms' },
     { id: 'community', icon: Users, label: 'Help' },
   ];
